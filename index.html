@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#183f36" />
+    <meta name="description" content="Ewa's standalone Poland property picker." />
+    <title>Ewa Property Picker Lite</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-copy">
+        <p class="eyebrow">Poland · Kraków to Zakopane</p>
+        <h1>Ewa Property Picker <span>Lite</span></h1>
+        <p class="subtitle">Detached escapes in nature, ready for holidays and holiday letting.</p>
+      </div>
+      <button class="secondary-button" id="refreshButton" type="button">Refresh</button>
+    </header>
+
+    <main>
+      <section class="search-request-panel" aria-labelledby="searchRequestTitle">
+        <div>
+          <p class="eyebrow">Manual search</p>
+          <h2 id="searchRequestTitle">What should we look for next?</h2>
+          <p>Request up to 10 new matches. Another request becomes available after one hour.</p>
+        </div>
+        <form id="searchRequestForm">
+          <label class="sr-only" for="searchRequestText">Search request</label>
+          <textarea id="searchRequestText" maxlength="500" placeholder="For example: more wooden cabins near a river, but closer to Kraków"></textarea>
+          <div class="request-actions">
+            <span id="countdownText">Ready for a new request</span>
+            <button class="primary-button" id="requestButton" type="submit">Request search</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="toolbar" aria-label="Property filters">
+        <div class="result-summary">
+          <strong id="resultCount">0 properties</strong>
+          <span id="lastUpdated"></span>
+        </div>
+        <div class="filters">
+          <label>
+            Match
+            <select id="matchFilter">
+              <option value="all">All</option>
+              <option value="strong">Strong</option>
+              <option value="near">Near</option>
+              <option value="weak">Weak</option>
+            </select>
+          </label>
+          <label>
+            Vote
+            <select id="voteFilter">
+              <option value="all">All</option>
+              <option value="unreviewed">Unreviewed</option>
+              <option value="interested">Interested</option>
+              <option value="maybe">Maybe</option>
+              <option value="not interested">Not interested</option>
+            </select>
+          </label>
+          <button class="text-button" id="clearFilters" type="button">Clear filters</button>
+        </div>
+      </section>
+
+      <section id="statusMessage" class="status-message" aria-live="polite">Loading Ewa’s properties…</section>
+      <section id="propertyGrid" class="property-grid" aria-label="Property results"></section>
+    </main>
+
+    <template id="propertyCardTemplate">
+      <article class="property-card">
+        <div class="property-image-wrap">
+          <img class="property-image" alt="" loading="lazy" />
+          <div class="image-placeholder">Poland</div>
+          <span class="match-badge"></span>
+        </div>
+        <div class="card-body">
+          <div class="card-heading">
+            <div>
+              <p class="location"></p>
+              <h2 class="price"></h2>
+            </div>
+            <a class="listing-link" target="_blank" rel="noopener noreferrer">View listing</a>
+          </div>
+          <div class="facts"></div>
+          <p class="natural-setting"></p>
+          <div class="feedback-box">
+            <span>Feedback summary</span>
+            <p class="feedback-summary">No feedback summary yet.</p>
+          </div>
+          <fieldset class="vote-control">
+            <legend>Ewa’s vote</legend>
+            <button type="button" data-vote="Interested">👍 Interested</button>
+            <button type="button" data-vote="Maybe">✋ Maybe</button>
+            <button type="button" data-vote="Not interested">👎 Not interested</button>
+          </fieldset>
+          <label class="notes-label">
+            Notes for AI
+            <textarea class="notes" maxlength="1000" placeholder="What works or doesn’t work about this property?"></textarea>
+          </label>
+          <div class="card-footer">
+            <button class="save-notes text-button" type="button">Save notes</button>
+            <button class="copy-id text-button" type="button">Copy listing ID</button>
+            <button class="removed-button text-button" type="button">Mark removed by agent</button>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
