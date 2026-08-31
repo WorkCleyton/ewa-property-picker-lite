@@ -1,6 +1,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyvqgPWUZy9O7zbawxfla8GyodEny2IK553v8caD9-wsNrKKkTDvXJnTXa5bDXSW7z6/exec";
 
-const state = { properties: [], searchRequests: [], cooldownUntil: null, timer: null };
+const state = { properties: [], searchRequests: [], cooldownUntil: null, timer: null, map: null, markers: null, mapRenderToken: 0 };
 const grid = document.querySelector("#propertyGrid");
 const statusMessage = document.querySelector("#statusMessage");
 const resultCount = document.querySelector("#resultCount");
@@ -10,6 +10,7 @@ const voteFilter = document.querySelector("#voteFilter");
 const requestButton = document.querySelector("#requestButton");
 const countdownText = document.querySelector("#countdownText");
 const purgeButton = document.querySelector("#purgeButton");
+const mapStatus = document.querySelector("#mapStatus");
 
 async function loadData() {
   setStatus("Loading Ewa’s properties…");
@@ -53,6 +54,7 @@ function render() {
   purgeButton.disabled = purgeCount === 0;
   purgeButton.textContent = purgeCount ? `Purge not interested (${purgeCount})` : "Purge not interested";
   grid.replaceChildren();
+  renderMap(properties).catch(() => { mapStatus.textContent = "Map locations couldn’t be loaded."; });
   resultCount.textContent = `${properties.length} ${properties.length === 1 ? "property" : "properties"}`;
   if (!properties.length) {
     setStatus(state.properties.length ? "No properties match those filters." : "No properties yet. Use the search request above to guide the first search.");
@@ -65,6 +67,7 @@ function render() {
 function createCard(property) {
   const card = document.querySelector("#propertyCardTemplate").content.firstElementChild.cloneNode(true);
   const listingId = property["Listing ID / Dedup Key"];
+  card.id = `property-${safeDomId(listingId)}`;
   const image = card.querySelector(".property-image");
   const imageUrl = property["Image URL"];
   if (imageUrl) {
@@ -113,6 +116,90 @@ function createCard(property) {
     render();
   });
   return card;
+}
+
+
+function initialiseMap() {
+  if (state.map || typeof L === "undefined") return;
+  state.map = L.map("propertyMap", { scrollWheelZoom: false }).setView([49.67, 19.98], 9);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(state.map);
+  state.markers = L.layerGroup().addTo(state.map);
+}
+
+async function renderMap(properties) {
+  initialiseMap();
+  if (!state.map) {
+    mapStatus.textContent = "Map unavailable.";
+    return;
+  }
+
+  const token = ++state.mapRenderToken;
+  state.markers.clearLayers();
+
+  if (!properties.length) {
+    mapStatus.textContent = "No properties to map";
+    state.map.setView([49.67, 19.98], 9);
+    return;
+  }
+
+  mapStatus.textContent = "Locating properties…";
+  const bounds = [];
+
+  for (const property of properties) {
+    const location = property["Region / Location"];
+    if (!location) continue;
+    const coordinates = await geocodeLocation(location);
+    if (token !== state.mapRenderToken) return;
+    if (!coordinates) continue;
+
+    const marker = L.marker(coordinates).addTo(state.markers);
+    const listingId = property["Listing ID / Dedup Key"];
+    const cardId = `property-${safeDomId(listingId)}`;
+    const listingLink = property["Listing URL"]
+      ? `<a href="${escapeHtml(property["Listing URL"])}" target="_blank" rel="noopener noreferrer">View listing</a>`
+      : "";
+    marker.bindPopup(
+      `<strong>${escapeHtml(location)}</strong><br>${escapeHtml(formatPrice(property))}<br><a href="#${cardId}">View property card</a>${listingLink ? ` · ${listingLink}` : ""}`
+    );
+    bounds.push(coordinates);
+  }
+
+  if (token !== state.mapRenderToken) return;
+  mapStatus.textContent = `${bounds.length} ${bounds.length === 1 ? "property" : "properties"} mapped`;
+  if (bounds.length === 1) state.map.setView(bounds[0], 12);
+  if (bounds.length > 1) state.map.fitBounds(bounds, { padding: [35, 35], maxZoom: 12 });
+  setTimeout(() => state.map.invalidateSize(), 0);
+}
+
+async function geocodeLocation(location) {
+  const cacheKey = `ewa-map:${location.toLowerCase()}`;
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) return JSON.parse(cached);
+  } catch (_) {}
+
+  const query = `${location}, Małopolskie, Poland`;
+  const url = new URL("https://nominatim.openstreetmap.org/search");
+  url.search = new URLSearchParams({ q: query, format: "jsonv2", limit: "1", countrycodes: "pl" });
+  try {
+    const response = await fetch(url, { headers: { "Accept-Language": "en" } });
+    if (!response.ok) return null;
+    const results = await response.json();
+    if (!results.length) return null;
+    const coordinates = [Number(results[0].lat), Number(results[0].lon)];
+    try { localStorage.setItem(cacheKey, JSON.stringify(coordinates)); } catch (_) {}
+    await new Promise(resolve => setTimeout(resolve, 1100));
+    return coordinates;
+  } catch (_) {
+    return null;
+  }
+}
+
+function safeDomId(value) {
+  return String(value || "").replace(/[^a-zA-Z0-9_-]/g, "-");
 }
 
 function formatPrice(property) {
