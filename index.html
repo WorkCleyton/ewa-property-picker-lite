@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -37,6 +38,18 @@
             <button class="secondary-button" id="refreshButton" type="button">Refresh</button>
           </div>
         </form>
+      </section>
+
+      <section class="map-panel" aria-labelledby="mapTitle">
+        <div class="map-heading">
+          <div>
+            <p class="eyebrow">Area map</p>
+            <h2 id="mapTitle">Kraków to Zakopane</h2>
+          </div>
+          <span id="mapStatus">Loading property locations…</span>
+        </div>
+        <div id="propertyMap" role="region" aria-label="Map of active properties"></div>
+        <p class="map-note">Pins show the approximate listing location, not the property’s exact address.</p>
       </section>
 
       <section class="toolbar" aria-label="Property filters">
@@ -113,6 +126,7 @@
       </article>
     </template>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
     <script src="app.js" defer></script>
   </body>
 </html>
