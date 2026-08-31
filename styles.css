@@ -80,8 +80,8 @@ textarea {
 }
 textarea:focus, select:focus, button:focus-visible, a:focus-visible { outline: 3px solid rgba(196, 149, 67, .35); outline-offset: 2px; }
 #searchRequestText { min-height: 94px; }
-.request-actions { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: .75rem; }
-#countdownText { color: var(--muted); font-size: .82rem; }
+.request-actions { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1rem; margin-top: .75rem; }
+#countdownText { color: var(--muted); font-size: .82rem; text-align: center; }
 
 .primary-button, .secondary-button {
   border: 0;
@@ -158,8 +158,9 @@ select { display: block; min-width: 130px; margin-top: .3rem; border: 1px solid 
   .site-header { padding-inline: .8rem; }
   .subtitle { max-width: 18rem; }
   .search-request-panel { padding: 1.1rem; border-radius: 16px; }
-  .request-actions { align-items: stretch; flex-direction: column; }
-  .primary-button { width: 100%; }
+  .request-actions { grid-template-columns: 1fr; align-items: stretch; }
+  #countdownText { order: -1; }
+  .primary-button, .request-actions .secondary-button { width: 100%; }
   .property-image-wrap { height: 210px; }
   .card-heading { flex-direction: column; gap: 0; }
   .listing-link { margin-bottom: .9rem; }
