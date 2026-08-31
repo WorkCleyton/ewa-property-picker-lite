@@ -80,7 +80,22 @@ textarea {
 }
 textarea:focus, select:focus, button:focus-visible, a:focus-visible { outline: 3px solid rgba(196, 149, 67, .35); outline-offset: 2px; }
 #searchRequestText { min-height: 94px; }
-.request-actions { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1rem; margin-top: .75rem; }
+.request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+  margin-top: .75rem;
+}
+
+.request-actions button {
+  white-space: nowrap;
+}
+
+.request-actions + #countdownText {
+  display: block;
+  margin-top: .5rem;
+}
 #countdownText { color: var(--muted); font-size: .82rem; text-align: center; }
 
 .primary-button, .secondary-button {
@@ -185,9 +200,18 @@ select { display: block; min-width: 130px; margin-top: .3rem; border: 1px solid 
   .site-header { padding-inline: .8rem; }
   .subtitle { max-width: 18rem; }
   .search-request-panel { padding: 1.1rem; border-radius: 16px; }
-  .request-actions { grid-template-columns: 1fr; align-items: stretch; }
-  #countdownText { order: -1; }
-  .primary-button, .request-actions .secondary-button { width: 100%; }
+.request-actions {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.request-actions button {
+  width: 100%;
+}
+
+#countdownText {
+  order: initial;
+}
   #propertyMap { height: 285px; }
   .map-heading { align-items: flex-start; flex-direction: column; gap: .25rem; }
   .property-image-wrap { height: 210px; }
