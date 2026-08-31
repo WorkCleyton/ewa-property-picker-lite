@@ -107,7 +107,16 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 .filters label { color: var(--muted); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
 select { display: block; min-width: 130px; margin-top: .3rem; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); padding: .55rem .65rem; color: var(--ink); text-transform: none; letter-spacing: normal; }
 .text-button { border: 0; background: transparent; color: var(--forest-light); cursor: pointer; padding: .55rem .25rem; font-size: .82rem; font-weight: 700; }
-.purge-button { border-color: var(--rose); color: var(--rose); padding: .55rem .85rem; font-size: .82rem; white-space: nowrap; }
+.purge-button {
+  border: 2px solid var(--rose);
+  background: #fff4f2;
+  color: #8f3f3f;
+  padding: .5rem .85rem;
+  font-size: .82rem;
+  white-space: nowrap;
+}
+.purge-button:hover:not(:disabled) { background: var(--rose); color: white; }
+.purge-button:disabled { border-color: #c98c8c; background: #fff7f6; color: #a96767; opacity: 1; }
 
 .status-message { padding: 3rem 1rem; text-align: center; color: var(--muted); }
 .status-message:empty { display: none; }
