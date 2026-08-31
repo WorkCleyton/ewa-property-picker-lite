@@ -94,6 +94,22 @@ textarea:focus, select:focus, button:focus-visible, a:focus-visible { outline: 3
 .secondary-button { border: 1px solid var(--forest); background: transparent; color: var(--forest); }
 button:disabled { cursor: not-allowed; opacity: .55; }
 
+.map-panel {
+  margin-top: 2.2rem;
+  overflow: hidden;
+  border: 1px solid rgba(24, 63, 54, .12);
+  border-radius: 18px;
+  background: var(--paper);
+  box-shadow: 0 8px 30px rgba(21, 55, 47, .07);
+}
+.map-heading { display: flex; justify-content: space-between; align-items: end; gap: 1rem; padding: 1rem 1.15rem .8rem; }
+.map-heading h2 { margin: 0; font-family: "Newsreader", serif; font-size: 1.65rem; }
+#mapStatus { color: var(--muted); font-size: .78rem; }
+#propertyMap { width: 100%; height: 390px; background: #dfe8e1; }
+.map-note { margin: 0; padding: .65rem 1.15rem .75rem; color: var(--muted); font-size: .72rem; }
+.leaflet-popup-content { color: var(--ink); font-family: "DM Sans", sans-serif; line-height: 1.55; }
+.leaflet-popup-content a { color: var(--forest-light); font-weight: 700; }
+
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -157,6 +173,7 @@ select { display: block; min-width: 130px; margin-top: .3rem; border: 1px solid 
   .site-header { padding-top: 2rem; }
   .search-request-panel { grid-template-columns: 1fr; gap: 1rem; }
   .toolbar { align-items: flex-start; flex-direction: column; }
+  #propertyMap { height: 330px; }
   .filters { width: 100%; flex-wrap: wrap; }
   .filters label { flex: 1; }
   select { width: 100%; }
@@ -171,6 +188,8 @@ select { display: block; min-width: 130px; margin-top: .3rem; border: 1px solid 
   .request-actions { grid-template-columns: 1fr; align-items: stretch; }
   #countdownText { order: -1; }
   .primary-button, .request-actions .secondary-button { width: 100%; }
+  #propertyMap { height: 285px; }
+  .map-heading { align-items: flex-start; flex-direction: column; gap: .25rem; }
   .property-image-wrap { height: 210px; }
   .card-heading { flex-direction: column; gap: 0; }
   .listing-link { margin-bottom: .9rem; }
