@@ -9,6 +9,7 @@ const matchFilter = document.querySelector("#matchFilter");
 const voteFilter = document.querySelector("#voteFilter");
 const requestButton = document.querySelector("#requestButton");
 const countdownText = document.querySelector("#countdownText");
+const purgeButton = document.querySelector("#purgeButton");
 
 async function loadData() {
   setStatus("Loading Ewa’s properties…");
@@ -48,6 +49,9 @@ function filteredProperties() {
 
 function render() {
   const properties = filteredProperties();
+  const purgeCount = state.properties.filter(property => String(property["Ewa Vote"] || "").toLowerCase() === "not interested").length;
+  purgeButton.disabled = purgeCount === 0;
+  purgeButton.textContent = purgeCount ? `Purge not interested (${purgeCount})` : "Purge not interested";
   grid.replaceChildren();
   resultCount.textContent = `${properties.length} ${properties.length === 1 ? "property" : "properties"}`;
   if (!properties.length) {
@@ -149,6 +153,40 @@ document.querySelector("#searchRequestForm").addEventListener("submit", async ev
   }
 });
 
+async function purgeNotInterested() {
+  const rejected = state.properties.filter(property => String(property["Ewa Vote"] || "").toLowerCase() === "not interested");
+  if (!rejected.length) return;
+
+  const confirmed = window.confirm(`Remove ${rejected.length} not-interested ${rejected.length === 1 ? "property" : "properties"} from the active picker? Their Sheet rows, votes, notes and feedback will be retained as archived records.`);
+  if (!confirmed) return;
+
+  purgeButton.disabled = true;
+  purgeButton.textContent = "Purging…";
+  setStatus("Archiving not-interested properties…");
+
+  const results = await Promise.allSettled(rejected.map(property =>
+    postAction({
+      action: "updateListingStatus",
+      listingId: property["Listing ID / Dedup Key"],
+      status: "Archived"
+    })
+  ));
+
+  const archivedIds = new Set();
+  results.forEach((result, index) => {
+    if (result.status === "fulfilled") archivedIds.add(rejected[index]["Listing ID / Dedup Key"]);
+  });
+  state.properties = state.properties.filter(property => !archivedIds.has(property["Listing ID / Dedup Key"]));
+  render();
+
+  const failed = results.length - archivedIds.size;
+  if (failed) {
+    setStatus(`${archivedIds.size} archived; ${failed} could not be archived. Please try again.`);
+  } else {
+    setStatus(`${archivedIds.size} not-interested ${archivedIds.size === 1 ? "property" : "properties"} archived. The records remain in the Sheet.`);
+  }
+}
+
 function startCountdown() {
   clearInterval(state.timer);
   const update = () => {
@@ -177,4 +215,5 @@ function escapeHtml(value) { const div = document.createElement("div"); div.text
 [matchFilter, voteFilter].forEach(filter => filter.addEventListener("change", render));
 document.querySelector("#clearFilters").addEventListener("click", () => { matchFilter.value = "all"; voteFilter.value = "all"; render(); });
 document.querySelector("#refreshButton").addEventListener("click", loadData);
+purgeButton.addEventListener("click", purgeNotInterested);
 loadData();
