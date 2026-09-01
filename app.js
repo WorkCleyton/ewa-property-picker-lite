@@ -103,8 +103,6 @@ function createCard(property) {
   ].filter(Boolean).map(value => `<span class="fact">${escapeHtml(String(value))}</span>`).join("");
   card.querySelector(".natural-setting").textContent = property["Natural Setting"] || property["Condition / Renovation"] || "";
   card.querySelector(".feedback-summary").textContent = property["Feedback Summary"] || "No feedback summary yet.";
-  const notes = card.querySelector(".notes");
-  notes.value = property["Notes for AI"] || "";
   card.querySelectorAll("[data-vote]").forEach(button => {
     button.classList.toggle("active", button.dataset.vote === property["Ewa Vote"]);
     button.addEventListener("click", async () => {
@@ -113,13 +111,6 @@ function createCard(property) {
       property["Ewa Vote"] = nextVote;
       render();
     });
-  });
-  card.querySelector(".save-notes").addEventListener("click", async event => {
-    event.currentTarget.disabled = true;
-    await postAction({ action: "updateNotes", listingId, notes: notes.value });
-    property["Notes for AI"] = notes.value;
-    event.currentTarget.textContent = "Saved";
-    setTimeout(() => { event.currentTarget.textContent = "Save notes"; event.currentTarget.disabled = false; }, 1200);
   });
   card.querySelector(".copy-id").addEventListener("click", async event => {
     await navigator.clipboard.writeText(listingId);
