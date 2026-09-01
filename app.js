@@ -66,7 +66,7 @@ function render() {
   renderMap(properties).catch(() => { mapStatus.textContent = "Map locations couldn’t be loaded."; });
   resultCount.textContent = `${properties.length} ${properties.length === 1 ? "property" : "properties"}`;
   if (!properties.length) {
-    setStatus(state.properties.length ? "No properties match those filters." : "No properties yet. Use the search request above to guide the first search.");
+    setStatus(state.properties.length ? "No properties match those filters." : "No properties yet. Use Request search above to add the first results.");
     return;
   }
   setStatus("");
@@ -220,17 +220,16 @@ async function postAction(payload) {
 
 document.querySelector("#searchRequestForm").addEventListener("submit", async event => {
   event.preventDefault();
-  const field = document.querySelector("#searchRequestText");
-  const requestText = field.value.trim();
-  if (!requestText) return field.focus();
   requestButton.disabled = true;
   requestButton.textContent = "Sending…";
   try {
-    const data = await postAction({ action: "requestSearch", requestText });
+    const data = await postAction({
+      action: "requestSearch",
+      requestText: "Standard search using Ewa’s stated and learned preferences"
+    });
     if (!data.accepted) {
       state.cooldownUntil = new Date(data.cooldownUntil);
     } else {
-      field.value = "";
       state.cooldownUntil = new Date(data.cooldownUntil);
       state.requestPending = true;
     }
