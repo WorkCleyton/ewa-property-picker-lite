@@ -1,6 +1,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyvqgPWUZy9O7zbawxfla8GyodEny2IK553v8caD9-wsNrKKkTDvXJnTXa5bDXSW7z6/exec";
 
-const state = { properties: [], searchRequests: [], cooldownUntil: null, timer: null, pollTimer: null, requestPending: false, map: null, markers: null, mapRenderToken: 0 };
+const state = { properties: [], searchRequests: [], cooldownUntil: null, timer: null, requestPending: false, map: null, markers: null, mapRenderToken: 0 };
 const grid = document.querySelector("#propertyGrid");
 const statusMessage = document.querySelector("#statusMessage");
 const resultCount = document.querySelector("#resultCount");
@@ -43,13 +43,6 @@ function updateRequestState() {
     .sort((a, b) => new Date(b["Requested At"]) - new Date(a["Requested At"]))[0];
   const status = String(latest?.Status || "").toLowerCase();
   state.requestPending = status === "queued" || status === "running";
-  scheduleProcessingPoll();
-}
-
-function scheduleProcessingPoll() {
-  clearTimeout(state.pollTimer);
-  if (!state.requestPending) return;
-  state.pollTimer = setTimeout(loadData, 60000);
 }
 
 function filteredProperties() {
@@ -240,7 +233,6 @@ document.querySelector("#searchRequestForm").addEventListener("submit", async ev
       field.value = "";
       state.cooldownUntil = new Date(data.cooldownUntil);
       state.requestPending = true;
-      scheduleProcessingPoll();
     }
     startCountdown();
   } catch (error) {
@@ -289,10 +281,10 @@ function startCountdown() {
     const remaining = state.cooldownUntil ? state.cooldownUntil.getTime() - Date.now() : 0;
     if (state.requestPending) {
       countdownText.textContent = remaining > 0
-        ? `Search queued · next request in ${Math.floor(Math.ceil(remaining / 1000) / 60)}:${String(Math.ceil(remaining / 1000) % 60).padStart(2, "0")}`
-        : "Search in progress · new properties will appear automatically";
+        ? `Search requested · click Refresh to check results · next request in ${Math.floor(Math.ceil(remaining / 1000) / 60)}:${String(Math.ceil(remaining / 1000) % 60).padStart(2, "0")}`
+        : "Search requested · click Refresh to check results";
       requestButton.disabled = true;
-      requestButton.textContent = "Search queued";
+      requestButton.textContent = "Search requested";
       if (remaining <= 0) clearInterval(state.timer);
       return;
     }
