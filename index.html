@@ -32,12 +32,12 @@
         <form id="searchRequestForm">
           <label class="sr-only" for="searchRequestText">Search request</label>
           <textarea id="searchRequestText" maxlength="500" placeholder="For example: more wooden cabins near a river, but closer to Kraków"></textarea>
-<div class="request-actions">
-  <button class="primary-button" id="requestButton" type="submit">Request search</button>
-  <button class="secondary-button" id="refreshButton" type="button">Refresh</button>
-  <button class="secondary-button purge-button" id="purgeButton" type="button" disabled>Purge not interested</button>
-</div>
-<span id="countdownText">Ready for a new request</span>
+          <div class="request-actions">
+            <button class="primary-button" id="requestButton" type="submit">Request search</button>
+            <span id="countdownText" aria-live="polite">Ready for a new request</span>
+            <button class="secondary-button" id="refreshButton" type="button">Refresh</button>
+            <button class="secondary-button purge-button" id="purgeButton" type="button" disabled>Purge not interested</button>
+          </div>
         </form>
       </section>
 
@@ -79,11 +79,6 @@
             </select>
           </label>
           <button class="text-button" id="clearFilters" type="button">Clear filters</button>
-<div class="request-actions">
-  <button class="primary-button" id="requestButton" type="submit">Request search</button>
-  <button class="secondary-button" id="refreshButton" type="button">Refresh</button>
-</div>
-<span id="countdownText">Ready for a new request</span>
         </div>
       </section>
 
