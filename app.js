@@ -1,5 +1,128 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyvqgPWUZy9O7zbawxfla8GyodEny2IK553v8caD9-wsNrKKkTDvXJnTXa5bDXSW7z6/exec";
 
+const POLAND_AIRPORTS = [
+  {
+    name: "Gdańsk Lech Wałęsa Airport",
+    code: "GDN",
+    latitude: 54.3776,
+    longitude: 18.4662,
+    londonAirports: ["LGW"]
+  },
+  {
+    name: "Kraków John Paul II Airport",
+    code: "KRK",
+    latitude: 50.0777,
+    longitude: 19.7848,
+    londonAirports: ["LHR", "LGW"]
+  },
+  {
+    name: "Warsaw Chopin Airport",
+    code: "WAW",
+    latitude: 52.1657,
+    longitude: 20.9671,
+    londonAirports: ["LHR"]
+  }
+];
+
+function houseIcon() {
+  return L.divIcon({
+    className: "",
+    html: `
+      <div style="
+        font-size: 26px;
+        line-height: 26px;
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        cursor: pointer;
+      ">🏠</div>
+    `,
+    iconSize: [30, 30],
+    iconAnchor: [15, 28],
+    popupAnchor: [0, -28]
+  });
+}
+
+function airportIcon(code) {
+  return L.divIcon({
+    className: "",
+    html: `
+      <div style="
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        width: max-content;
+        padding: 2px 5px;
+        border-radius: 6px;
+        border: 1px solid #2563eb;
+        background: rgba(255,255,255,0.92);
+        color: #1e40af;
+        font-family: Arial, sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 14px;
+        white-space: nowrap;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+        cursor: pointer;
+      ">
+        <span>✈</span>
+        <span>${code}</span>
+      </div>
+    `,
+    iconSize: [45, 20],
+    iconAnchor: [22, 10],
+    popupAnchor: [0, -12]
+  });
+}
+
+function distanceKm(latitude1, longitude1, latitude2, longitude2) {
+  const earthRadiusKm = 6371;
+  const latitudeDifference = ((latitude2 - latitude1) * Math.PI) / 180;
+  const longitudeDifference = ((longitude2 - longitude1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(latitudeDifference / 2) * Math.sin(latitudeDifference / 2) +
+    Math.cos((latitude1 * Math.PI) / 180) *
+      Math.cos((latitude2 * Math.PI) / 180) *
+      Math.sin(longitudeDifference / 2) *
+      Math.sin(longitudeDifference / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return earthRadiusKm * c;
+}
+
+function nearestAirport(coordinates) {
+  if (!coordinates || !POLAND_AIRPORTS.length) return null;
+
+  let nearest = POLAND_AIRPORTS[0];
+  let nearestDistance = distanceKm(
+    coordinates[0],
+    coordinates[1],
+    nearest.latitude,
+    nearest.longitude
+  );
+
+  for (const airport of POLAND_AIRPORTS.slice(1)) {
+    const distance = distanceKm(
+      coordinates[0],
+      coordinates[1],
+      airport.latitude,
+      airport.longitude
+    );
+
+    if (distance < nearestDistance) {
+      nearest = airport;
+      nearestDistance = distance;
+    }
+  }
+
+  return {
+    airport: nearest,
+    distanceKm: Math.round(nearestDistance)
+  };
+}
+
+
 const state = { properties: [], searchRequests: [], cooldownUntil: null, timer: null, requestPending: false, map: null, markers: null, mapRenderToken: 0 };
 const grid = document.querySelector("#propertyGrid");
 const statusMessage = document.querySelector("#statusMessage");
@@ -146,31 +269,94 @@ async function renderMap(properties) {
   }
 
   mapStatus.textContent = "Locating properties…";
-  const bounds = [];
+  const mappedProperties = [];
 
   for (const property of properties) {
     const location = property["Region / Location"];
     if (!location) continue;
+
     const coordinates = await geocodeLocation(location);
     if (token !== state.mapRenderToken) return;
     if (!coordinates) continue;
 
-    const marker = L.marker(coordinates).addTo(state.markers);
+    mappedProperties.push({ property, location, coordinates });
+  }
+
+  if (token !== state.mapRenderToken) return;
+
+  const relevantAirports = POLAND_AIRPORTS;
+
+  for (const airport of relevantAirports) {
+    const airportCoordinates = [airport.latitude, airport.longitude];
+
+    L.circle(airportCoordinates, {
+      radius: 100000,
+      color: "#dc2626",
+      weight: 2,
+      opacity: 0.75,
+      fillColor: "#3b82f6",
+      fillOpacity: 0.025
+    }).addTo(state.markers);
+
+    L.marker(airportCoordinates, {
+      icon: airportIcon(airport.code),
+      zIndexOffset: 500
+    })
+      .addTo(state.markers)
+      .bindPopup(
+        `<strong>✈ ${escapeHtml(airport.name)}</strong><br>` +
+        `${escapeHtml(airport.code)}<br>` +
+        `Direct from: <strong>${escapeHtml(airport.londonAirports.join(", "))}</strong><br>` +
+        '<span style="font-size:11px">Circle = 100 km straight-line radius<br>Direct routes may be seasonal</span>'
+      );
+  }
+
+  const bounds = [];
+  const propertyMarkerIcon = houseIcon();
+
+  for (const { property, location, coordinates } of mappedProperties) {
     const listingId = property["Listing ID / Dedup Key"];
     const cardId = `property-${safeDomId(listingId)}`;
     const listingLink = property["Listing URL"]
       ? `<a href="${escapeHtml(property["Listing URL"])}" target="_blank" rel="noopener noreferrer">View listing</a>`
       : "";
-    marker.bindPopup(
-      `<strong>${escapeHtml(location)}</strong><br>${escapeHtml(formatPrice(property))}<br><a href="#${cardId}">View property card</a>${listingLink ? ` · ${listingLink}` : ""}`
-    );
+
+    const nearest = nearestAirport(coordinates);
+    const airportDetails = nearest
+      ? '<br><br><strong>✈ Nearest London-direct airport</strong><br>' +
+        `${escapeHtml(nearest.airport.name)} (${escapeHtml(nearest.airport.code)}) — <strong>${nearest.distanceKm} km</strong><br>` +
+        `Direct from: ${escapeHtml(nearest.airport.londonAirports.join(", "))}`
+      : "";
+
+    L.marker(coordinates, { icon: propertyMarkerIcon })
+      .addTo(state.markers)
+      .bindPopup(
+        `<strong>${escapeHtml(location)}</strong><br>` +
+        `${escapeHtml(formatPrice(property))}<br>` +
+        `${escapeHtml(property["Match Level"] || "Unrated match")}` +
+        airportDetails +
+        '<br><br><span style="font-size:11px">Distances are straight-line estimates<br>Approximate advertised location</span><br>' +
+        `<a href="#${cardId}">Show property card ↓</a>` +
+        (listingLink ? ` · ${listingLink}` : "")
+      );
+
     bounds.push(coordinates);
   }
 
-  if (token !== state.mapRenderToken) return;
-  mapStatus.textContent = `${bounds.length} ${bounds.length === 1 ? "property" : "properties"} mapped`;
-  if (bounds.length === 1) state.map.setView(bounds[0], 12);
-  if (bounds.length > 1) state.map.fitBounds(bounds, { padding: [35, 35], maxZoom: 12 });
+  mapStatus.textContent =
+    `${bounds.length} ${bounds.length === 1 ? "property" : "properties"} mapped · ` +
+    `${relevantAirports.length} ${relevantAirports.length === 1 ? "airport" : "airports"} shown`;
+
+  const visibleBounds = bounds.concat(
+    relevantAirports.map(airport => [airport.latitude, airport.longitude])
+  );
+
+  if (visibleBounds.length === 1) {
+    state.map.setView(visibleBounds[0], 10);
+  } else if (visibleBounds.length > 1) {
+    state.map.fitBounds(visibleBounds, { padding: [40, 40], maxZoom: 10 });
+  }
+
   setTimeout(() => state.map.invalidateSize(), 0);
 }
 
