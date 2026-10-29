@@ -36,6 +36,7 @@ jobs:
           if [[ "$status" != "200" ]]; then
             echo "::error::Supabase RPC returned HTTP $status"
             python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); c=str(d.get("code",d.get("error_code","not-provided"))) if isinstance(d,dict) else "not-provided"; print("Supabase error code:", "".join(x for x in c if x.isascii() and (x.isalnum() or x in "_-"))[:80])' "$response_file" || echo "Non-JSON gateway error response"
+            python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); m=str(d.get("message","")) if isinstance(d,dict) else ""; print("Database error detail:", "".join(c for c in m if c.isascii() and (c.isalnum() or c in " _.-"))[:180] or "unavailable")' "$response_file" || true
             exit 1
           fi
           result=$(cat "$response_file")
