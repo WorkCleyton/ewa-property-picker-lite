@@ -35,7 +35,7 @@ jobs:
           echo "Supabase RPC HTTP status: $status"
           if [[ "$status" != "200" ]]; then
             echo "::error::Supabase RPC returned HTTP $status"
-            echo "HTTP request rejected; inspect Supabase API gateway logs for details."
+            python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); c=str(d.get("code",d.get("error_code","not-provided"))) if isinstance(d,dict) else "not-provided"; print("Supabase error code:", "".join(x for x in c if x.isascii() and (x.isalnum() or x in "_-"))[:80])' "$response_file" || echo "Non-JSON gateway error response"
             exit 1
           fi
           result=$(cat "$response_file")
