@@ -24,12 +24,32 @@ jobs:
             echo "::error::Configure SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY repository secrets."
             exit 1
           fi
-          result=$(curl --fail-with-body --silent --show-error --retry 2 --retry-delay 5 \
+          response_file=$(mktemp)
+          status=$(curl --silent --show-error --retry 2 --retry-delay 5 \
             --connect-timeout 10 --max-time 30 \
+            -o "$response_file" -w '%{http_code}' \
             -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
             -H "Content-Type: application/json" \
             -X POST -d '{}' \
             "${SUPABASE_URL%/}/rest/v1/rpc/keepalive")
+          echo "Supabase RPC HTTP status: $status"
+          if [[ "$status" != "200" ]]; then
+            echo "::error::Supabase RPC returned HTTP $status"
+            python3 - "$response_file" <<'PY'
+import json, sys
+try:
+    obj = json.load(open(sys.argv[1]))
+    if isinstance(obj, dict):
+        code = str(obj.get("code") or obj.get("error_code") or "not-provided")
+        # Only output structured machine-readable error code, never arbitrary response text
+        safe = "".join(c for c in code if c.isascii() and (c.isalnum() or c in "_-"))
+        print("Supabase error code:", safe[:90] or "not-provided")
+except (OSError, ValueError):
+    print("Supabase response is not JSON; see project gateway logs")
+PY
+            exit 1
+          fi
+          result=$(cat "$response_file")
           if [[ "$result" != "1" ]]; then
             echo "::error::Keepalive returned unexpected response"
             exit 1
