@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -12,11 +12,14 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css" />
-  </head>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=cleyton-v1" />
+  <link rel="manifest" href="/manifest.webmanifest?v=cleyton-v1" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=cleyton-v1" />
+</head>
   <body>
     <header class="site-header">
       <div class="header-copy">
-        <p class="eyebrow">Poland · Kraków to Zakopane</p>
+        <p class="eyebrow">Poland Â· KrakÃ³w to Zakopane</p>
         <h1>Ewa Property Picker <span>Lite</span></h1>
         <p class="subtitle">Detached escapes in nature, ready for holidays and holiday letting.</p>
       </div>
@@ -27,7 +30,7 @@
         <div>
           <p class="eyebrow">Manual search</p>
           <h2 id="searchRequestTitle">Request more properties</h2>
-          <p>Uses Ewa’s stated preferences and card feedback. Up to 10 new matches can be requested once per hour.</p>
+          <p>Uses Ewaâ€™s stated preferences and card feedback. Up to 10 new matches can be requested once per hour.</p>
         </div>
         <form id="searchRequestForm">
           <div class="request-actions">
@@ -43,12 +46,12 @@
         <div class="map-heading">
           <div>
             <p class="eyebrow">Area map</p>
-            <h2 id="mapTitle">Kraków to Zakopane</h2>
+            <h2 id="mapTitle">KrakÃ³w to Zakopane</h2>
           </div>
-          <span id="mapStatus">Loading property locations…</span>
+          <span id="mapStatus">Loading property locationsâ€¦</span>
         </div>
         <div id="propertyMap" role="region" aria-label="Map of active properties"></div>
-        <p class="map-note">🏠 icons show approximate property locations. ✈ labels mark London-direct airports; each circle shows a 100 km straight-line radius.</p>
+        <p class="map-note">ðŸ  icons show approximate property locations. âœˆ labels mark London-direct airports; each circle shows a 100 km straight-line radius.</p>
       </section>
 
       <section class="toolbar" aria-label="Property filters">
@@ -80,7 +83,7 @@
         </div>
       </section>
 
-      <section id="statusMessage" class="status-message" aria-live="polite">Loading Ewa’s properties…</section>
+      <section id="statusMessage" class="status-message" aria-live="polite">Loading Ewaâ€™s propertiesâ€¦</section>
       <section id="propertyGrid" class="property-grid" aria-label="Property results"></section>
     </main>
 
@@ -106,10 +109,10 @@
             <p class="feedback-summary">No feedback summary yet.</p>
           </div>
           <fieldset class="vote-control">
-            <legend>Ewa’s vote</legend>
-            <button type="button" data-vote="Interested">👍 Interested</button>
-            <button type="button" data-vote="Maybe">✋ Maybe</button>
-            <button type="button" data-vote="Not interested">👎 Not interested</button>
+            <legend>Ewaâ€™s vote</legend>
+            <button type="button" data-vote="Interested">ðŸ‘ Interested</button>
+            <button type="button" data-vote="Maybe">âœ‹ Maybe</button>
+            <button type="button" data-vote="Not interested">ðŸ‘Ž Not interested</button>
           </fieldset>
           <div class="card-footer">
             <button class="copy-id text-button" type="button">Copy listing ID</button>
@@ -123,3 +126,4 @@
     <script src="app.js?v=20260901-1" defer></script>
   </body>
 </html>
+
